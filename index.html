@@ -65,16 +65,17 @@
     }
 
     function getFakeHebrewDate(date) {
-      const fakeHebrewMonths = ["תשרי", "חשוון", "כסלו", "טבת", "שבט", "אדר", "ניסן", "אייר", "סיון", "תמוז", "אב", "אלול"];
-      let day = date.getDate();
-      let month = fakeHebrewMonths[date.getMonth() % 12];
-      let year = 5784 + (date.getFullYear() - 2024);
-      return `${day} ב${month} ${year}`;
+      var fakeHebrewMonths = ["תשרי", "חשוון", "כסלו", "טבת", "שבט", "אדר", "ניסן", "אייר", "סיון", "תמוז", "אב", "אלול"];
+      var day = date.getDate();
+      var month = fakeHebrewMonths[date.getMonth() % 12];
+      var year = 5784 + (date.getFullYear() - 2024);
+      return day + " ב" + month + " " + year;
     }
 
     function getFakeParasha(date) {
-      const parshiot = ["בראשית", "נח", "לך לך", "וירא", "חיי שרה", "תולדות", "ויצא", "וישלח", "וישב", "מקץ", "ויגש", "ויחי"];
-      let week = Math.floor((date - new Date(date.getFullYear(), 0, 1)) / (1000 * 60 * 60 * 24 * 7));
+      var parshiot = ["בראשית", "נח", "לך לך", "וירא", "חיי שרה", "תולדות", "ויצא", "וישלח", "וישב", "מקץ", "ויגש", "ויחי"];
+      var startOfYear = new Date(date.getFullYear(), 0, 1);
+      var week = Math.floor((date - startOfYear) / (1000 * 60 * 60 * 24 * 7));
       return "פרשת " + parshiot[week % parshiot.length];
     }
 
