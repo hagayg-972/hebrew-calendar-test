@@ -30,7 +30,7 @@
 <body>
   <h1>לוח שנה עברי</h1>
   <label for="locationSelect">בחר מיקום:</label>
-  <select id="locationSelect" onchange="updateLocation()">
+  <select id="locationSelect">
     <option value="Asia/Jerusalem">תל אביב</option>
     <option value="Asia/Jerusalem">ירושלים</option>
     <option value="Asia/Haifa">חיפה</option>
@@ -44,10 +44,22 @@
   <div id="parasha" class="info">[פרשת השבוע]</div>
 
   <script>
+    function pad(n) {
+      return n < 10 ? '0' + n : n;
+    }
+
     function updateDisplay() {
       var now = new Date();
-      document.getElementById('time').textContent = now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
-      document.getElementById('gregDate').textContent = now.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      var hours = pad(now.getHours());
+      var minutes = pad(now.getMinutes());
+      var timeStr = hours + ':' + minutes;
+      document.getElementById('time').textContent = timeStr;
+
+      var days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+      var months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+      var gregStr = days[now.getDay()] + ", " + now.getDate() + " ב" + months[now.getMonth()] + " " + now.getFullYear();
+      document.getElementById('gregDate').textContent = gregStr;
+
       document.getElementById('hebDate').textContent = getFakeHebrewDate(now);
       document.getElementById('parasha').textContent = getFakeParasha(now);
     }
@@ -66,28 +78,10 @@
       return "פרשת " + parshiot[week % parshiot.length];
     }
 
-    function updateLocation() {
-      let tz = document.getElementById('locationSelect').value;
-      try {
-        let options = { timeZone: tz, hour: '2-digit', minute: '2-digit' };
-        let now = new Date().toLocaleTimeString('he-IL', options);
-        document.getElementById('time').textContent = now;
-      } catch (e) {
-        document.getElementById('time').textContent = "שגיאה בתצוגת שעה";
-      }
-    }
-
-    if (document.addEventListener) {
-      document.addEventListener("DOMContentLoaded", function () {
-        updateDisplay();
-        setInterval(updateDisplay, 60000);
-      });
-    } else {
-      window.attachEvent("onload", function () {
-        updateDisplay();
-        setInterval(updateDisplay, 60000);
-      });
-    }
+    window.onload = function () {
+      updateDisplay();
+      setInterval(updateDisplay, 60000);
+    };
   </script>
 </body>
 </html>
