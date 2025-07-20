@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>בדיקת JavaScript באייפד ישן</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      padding: 20px;
+      direction: rtl;
+    }
+    .message {
+      font-size: 1.5em;
+      margin: 20px 0;
+    }
+    .output {
+      font-size: 1.2em;
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+  <script>
+    window.onload = function () {
+      try {
+        var now = new Date();
+        var timeString = now.toString();
+        document.getElementById("output").innerHTML = "✅ JavaScript פועל!<br>" + timeString;
+      } catch (e) {
+        document.getElementById("output").innerHTML = "❌ שגיאה בהרצת JavaScript: <br><span class='error'>" + e + "</span>";
+      }
+    };
+  </script>
+</head>
+<body>
+  <h1>בדיקת JavaScript</h1>
+  <div class="message">ננסה להציג את השעה הנוכחית בעזרת JavaScript:</div>
+  <div id="output" class="output">[ממתין להרצת סקריפט]</div>
+</body>
+</html>
