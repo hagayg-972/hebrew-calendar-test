@@ -26,7 +26,7 @@
       margin-bottom: 20px;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/hebcal@2.5.0"></script>
+  <script src="https://unpkg.com/hebcal@2.5.0/dist/bundle.min.js"></script>
 </head>
 <body>
   <h1>לוח שנה עברי</h1>
@@ -62,12 +62,16 @@
       document.getElementById('gregDate').textContent = gregStr;
 
       try {
-        var hdate = new Hebcal.HDate(now);
-        document.getElementById('hebDate').textContent = hdate.renderGematriya();
+        if (typeof Hebcal !== 'undefined' && Hebcal.HDate) {
+          var hdate = new Hebcal.HDate(now);
+          document.getElementById('hebDate').textContent = hdate.renderGematriya();
 
-        var events = Hebcal.HDate.getLeyning(hdate);
-        var parsha = events && events.parsha;
-        document.getElementById('parasha').textContent = parsha ? 'פרשת ' + parsha : '[אין פרשה]';
+          var events = Hebcal.getLeyning(hdate);
+          var parsha = events && events.parsha;
+          document.getElementById('parasha').textContent = parsha ? 'פרשת ' + parsha : '[אין פרשה]';
+        } else {
+          throw new Error("Hebcal לא נטען");
+        }
       } catch (e) {
         console.error("שגיאה בתאריך עברי / פרשה:", e);
         document.getElementById('hebDate').textContent = '[שגיאה]';
