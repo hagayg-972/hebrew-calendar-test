@@ -1,113 +1,90 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>לוח שנה עברי</title>
   <style>
     body {
       font-family: sans-serif;
+      font-size: 22px;
       text-align: center;
-      background-color: #fdf6e3;
-      color: #333;
-      padding: 20px;
-      direction: rtl;
+      background-color: #f0f0f0;
     }
-    h1 {
-      font-size: 2em;
+    .container {
+      margin-top: 50px;
     }
-    .info {
-      font-size: 1.5em;
-      margin: 10px 0;
+    .title {
+      font-weight: bold;
+      margin-bottom: 5px;
     }
-    select {
-      font-size: 1em;
-      padding: 5px;
+    .value {
       margin-bottom: 20px;
     }
   </style>
-  <script src="hebcal.bundle.min.js"></script>
 </head>
 <body>
-  <h1>לוח שנה עברי</h1>
-  <label for="locationSelect">בחר מיקום:</label>
-  <select id="locationSelect">
-    <option value="293397">תל אביב</option>
-    <option value="281184">ירושלים</option>
-    <option value="294801">חיפה</option>
-    <option value="2643743">לונדון</option>
-    <option value="5128581">ניו יורק</option>
-  </select>
+  <div class="container">
+    <div class="title">השעה כעת:</div>
+    <div class="value" id="time"></div>
 
-  <div id="time" class="info">[שעה]</div>
-  <div id="gregDate" class="info">[תאריך לועזי]</div>
-  <div id="hebDate" class="info">[תאריך עברי]</div>
-  <div id="parasha" class="info">[פרשת השבוע]</div>
-  <div id="candles" class="info">[זמני הדלקת נרות]</div>
+    <div class="title">תאריך לועזי:</div>
+    <div class="value" id="gregorian-date"></div>
 
+    <div class="title">תאריך עברי:</div>
+    <div class="value" id="hebrew-date"></div>
+
+    <div class="title">פרשת השבוע:</div>
+    <div class="value" id="parasha"></div>
+
+    <div class="title">הדלקת נרות:</div>
+    <div class="value" id="candle-lighting"></div>
+  </div>
+
+  <!-- Include the local Hebcal library -->
+  <script src="hebcal.bundle.min.js"></script>
   <script>
     function pad(n) {
       return n < 10 ? '0' + n : n;
     }
 
-    function updateDisplay() {
-      var now = new Date();
-      var hours = pad(now.getHours());
-      var minutes = pad(now.getMinutes());
-      document.getElementById('time').textContent = hours + ':' + minutes;
+    function updateTime() {
+      const now = new Date();
+      const timeStr = pad(now.getHours()) + ':' + pad(now.getMinutes());
+      document.getElementById('time').textContent = timeStr;
 
-      var days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-      var months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
-      var gregStr = days[now.getDay()] + ", " + now.getDate() + " ב" + months[now.getMonth()] + " " + now.getFullYear();
-      document.getElementById('gregDate').textContent = gregStr;
+      const weekdayNames = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+      const monthNames = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
-      try {
-        if (typeof Hebcal !== 'undefined' && Hebcal.HDate) {
-          var hdate = new Hebcal.HDate(now);
-          document.getElementById('hebDate').textContent = hdate.renderGematriya();
-
-          var events = new Hebcal.HebrewCalendar(hdate);
-          var parsha = events.find(e => e.category === 'parashat');
-          document.getElementById('parasha').textContent = parsha ? 'פרשת ' + parsha.hebrew : '[אין פרשה]';
-        } else {
-          throw new Error("Hebcal לא נטען כראוי");
-        }
-      } catch (e) {
-        console.error("שגיאה בתאריך עברי / פרשה:", e);
-        document.getElementById('hebDate').textContent = '[שגיאה]';
-        document.getElementById('parasha').textContent = '[שגיאה]';
-      }
-
-      var geoId = document.getElementById('locationSelect').value;
-      var url = "https://www.hebcal.com/shabbat/?cfg=json&geonameid=" + geoId + "&b=1&m=50";
-
-      var request = new XMLHttpRequest();
-      request.open('GET', url, true);
-      request.onreadystatechange = function () {
-        if (request.readyState === 4 && request.status === 200) {
-          try {
-            var data = JSON.parse(request.responseText);
-            var candleEvent = data.items.find(item => item.category === 'candles');
-            if (candleEvent) {
-              var candleTime = new Date(candleEvent.date);
-              var timeStr = pad(candleTime.getHours()) + ':' + pad(candleTime.getMinutes());
-              document.getElementById('candles').textContent = 'הדלקת נרות: ' + timeStr;
-            } else {
-              document.getElementById('candles').textContent = '[אין זמני הדלקה]';
-            }
-          } catch (e) {
-            console.error('שגיאה בעיבוד הנתונים:', e);
-            document.getElementById('candles').textContent = '[שגיאה בעיבוד]';
-          }
-        }
-      };
-      request.send();
+      const gregStr = `${weekdayNames[now.getDay()]}, ${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+      document.getElementById('gregorian-date').textContent = gregStr;
     }
 
-    window.onload = function () {
-      updateDisplay();
-      setInterval(updateDisplay, 60000);
-      document.getElementById('locationSelect').addEventListener('change', updateDisplay);
+    function updateJewishData() {
+      try {
+        const now = new Date();
+        const hdate = new Hebcal.HDate(now);
+        const hdStr = hdate.renderHebrewDate();
+        document.getElementById('hebrew-date').textContent = hdStr;
+
+        const events = Hebcal.HebrewCalendar.getHolidaysOnDate(hdate);
+        const parasha = events.find(e => e.getDesc().startsWith('פרשת'));
+        document.getElementById('parasha').textContent = parasha ? parasha.getDesc() : '—';
+
+        const zmanim = new Hebcal.Zmanim({ date: now, latitude: 32.0853, longitude: 34.7818 });
+        const candle = zmanim.candle_lighting();
+        const candleStr = `${pad(candle.getHours())}:${pad(candle.getMinutes())}`;
+        document.getElementById('candle-lighting').textContent = candleStr;
+      } catch (err) {
+        console.error('שגיאה בחישוב התאריך העברי או הפרשה:', err);
+        document.getElementById('hebrew-date').textContent = '[שגיאה]';
+        document.getElementById('parasha').textContent = '[שגיאה]';
+        document.getElementById('candle-lighting').textContent = '[שגיאה]';
+      }
+    }
+
+    window.onload = function() {
+      updateTime();
+      updateJewishData();
     };
   </script>
 </body>
