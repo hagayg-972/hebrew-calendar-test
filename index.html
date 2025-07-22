@@ -26,18 +26,7 @@
       margin-bottom: 20px;
     }
   </style>
-  <script>
-    function loadHebcal(callback) {
-      var script = document.createElement('script');
-      script.src = "https://www.hebcal.com/js/hebcal.min.js";
-      script.onload = callback;
-      script.onerror = function () {
-        console.error("Hebcal library failed to load");
-        callback();
-      };
-      document.head.appendChild(script);
-    }
-  </script>
+  <script src="hebcal.bundle.min.js"></script>
 </head>
 <body>
   <h1>לוח שנה עברי</h1>
@@ -75,16 +64,11 @@
       try {
         if (typeof Hebcal !== 'undefined' && Hebcal.HDate) {
           var hdate = new Hebcal.HDate(now);
-          var hebStr = hdate.render("hebrew");
-          document.getElementById('hebDate').textContent = hebStr;
+          document.getElementById('hebDate').textContent = hdate.renderGematriya();
 
-          var events = hdate.holidays();
-          var parsha = events.find(ev => ev.desc.startsWith("Parashat"));
-          if (parsha) {
-            document.getElementById('parasha').textContent = parsha.hebrew || parsha.desc;
-          } else {
-            document.getElementById('parasha').textContent = '[אין פרשה]';
-          }
+          var events = new Hebcal.HebrewCalendar(hdate);
+          var parsha = events.find(e => e.category === 'parashat');
+          document.getElementById('parasha').textContent = parsha ? 'פרשת ' + parsha.hebrew : '[אין פרשה]';
         } else {
           throw new Error("Hebcal לא נטען כראוי");
         }
@@ -121,11 +105,9 @@
     }
 
     window.onload = function () {
-      loadHebcal(function () {
-        updateDisplay();
-        setInterval(updateDisplay, 60000);
-        document.getElementById('locationSelect').addEventListener('change', updateDisplay);
-      });
+      updateDisplay();
+      setInterval(updateDisplay, 60000);
+      document.getElementById('locationSelect').addEventListener('change', updateDisplay);
     };
   </script>
 </body>
