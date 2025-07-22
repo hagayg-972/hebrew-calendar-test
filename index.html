@@ -26,6 +26,7 @@
       margin-bottom: 20px;
     }
   </style>
+  <script src="https://unpkg.com/@hebcal/core@2.5.1/dist/bundle.min.js"></script>
 </head>
 <body>
   <h1>לוח שנה עברי</h1>
@@ -42,6 +43,7 @@
   <div id="gregDate" class="info">[תאריך לועזי]</div>
   <div id="hebDate" class="info">[תאריך עברי]</div>
   <div id="parasha" class="info">[פרשת השבוע]</div>
+  <div id="candles" class="info">[זמני הדלקת נרות]</div>
 
   <script>
     function pad(n) {
@@ -49,34 +51,28 @@
     }
 
     function updateDisplay() {
-      var now = new Date();
-      var hours = pad(now.getHours());
-      var minutes = pad(now.getMinutes());
-      var timeStr = hours + ':' + minutes;
-      document.getElementById('time').textContent = timeStr;
+      const now = new Date();
+      const hours = pad(now.getHours());
+      const minutes = pad(now.getMinutes());
+      document.getElementById('time').textContent = hours + ':' + minutes;
 
-      var days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-      var months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
-      var gregStr = days[now.getDay()] + ", " + now.getDate() + " ב" + months[now.getMonth()] + " " + now.getFullYear();
+      const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+      const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+      const gregStr = days[now.getDay()] + ", " + now.getDate() + " ב" + months[now.getMonth()] + " " + now.getFullYear();
       document.getElementById('gregDate').textContent = gregStr;
 
-      document.getElementById('hebDate').textContent = getFakeHebrewDate(now);
-      document.getElementById('parasha').textContent = getFakeParasha(now);
-    }
+      const hebcal = window.Hebcal;
+      const hdate = new hebcal.HDate(now);
+      const hebDateStr = hdate.renderGematriya();
+      document.getElementById('hebDate').textContent = hebDateStr;
 
-    function getFakeHebrewDate(date) {
-      var fakeHebrewMonths = ["תשרי", "חשוון", "כסלו", "טבת", "שבט", "אדר", "ניסן", "אייר", "סיון", "תמוז", "אב", "אלול"];
-      var day = date.getDate();
-      var month = fakeHebrewMonths[date.getMonth() % 12];
-      var year = 5784 + (date.getFullYear() - 2024);
-      return day + " ב" + month + " " + year;
-    }
+      const parasha = hebcal.ParshaOnDate(hdate);
+      document.getElementById('parasha').textContent = parasha ? 'פרשת ' + parasha : '[אין פרשה]';
 
-    function getFakeParasha(date) {
-      var parshiot = ["בראשית", "נח", "לך לך", "וירא", "חיי שרה", "תולדות", "ויצא", "וישלח", "וישב", "מקץ", "ויגש", "ויחי"];
-      var startOfYear = new Date(date.getFullYear(), 0, 1);
-      var week = Math.floor((date - startOfYear) / (1000 * 60 * 60 * 24 * 7));
-      return "פרשת " + parshiot[week % parshiot.length];
+      const location = document.getElementById('locationSelect').value;
+      const z = new hebcal.Zmanim(new hebcal.HDate(now), location);
+      const candle = z.candle_lighting();
+      document.getElementById('candles').textContent = candle ? 'הדלקת נרות: ' + candle.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) : '[אין זמני הדלקה]';
     }
 
     window.onload = function () {
