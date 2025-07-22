@@ -26,7 +26,7 @@
       margin-bottom: 20px;
     }
   </style>
-  <script src="https://unpkg.com/@hebcal/core@2.5.1/dist/bundle.min.js"></script>
+  <script src="https://unpkg.com/hebcal@2.6.0"></script>
 </head>
 <body>
   <h1>לוח שנה עברי</h1>
@@ -61,14 +61,16 @@
       var gregStr = days[now.getDay()] + ", " + now.getDate() + " ב" + months[now.getMonth()] + " " + now.getFullYear();
       document.getElementById('gregDate').textContent = gregStr;
 
-      var hebcal = window.Hebcal;
-      var hdate = new hebcal.HDate(now);
-      var hebDateStr = hdate.renderGematriya();
-      document.getElementById('hebDate').textContent = hebDateStr;
+      try {
+        var hdate = new Hebcal.HDate(now);
+        document.getElementById('hebDate').textContent = hdate.renderGematriya();
 
-      var leyning = hebcal.getLeyning(hdate);
-      var parasha = leyning && leyning.parsha ? 'פרשת ' + leyning.parsha : '[אין פרשה]';
-      document.getElementById('parasha').textContent = parasha;
+        var parsha = Hebcal.getLeyning(hdate).parsha;
+        document.getElementById('parasha').textContent = parsha ? 'פרשת ' + parsha : '[אין פרשה]';
+      } catch (e) {
+        document.getElementById('hebDate').textContent = '[שגיאה]';
+        document.getElementById('parasha').textContent = '[שגיאה]';
+      }
 
       var geoId = document.getElementById('locationSelect').value;
       var url = "https://www.hebcal.com/shabbat/?cfg=json&geonameid=" + geoId + "&b=1&m=50";
