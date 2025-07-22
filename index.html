@@ -32,11 +32,11 @@
   <h1>לוח שנה עברי</h1>
   <label for="locationSelect">בחר מיקום:</label>
   <select id="locationSelect">
-    <option value="Asia/Jerusalem">תל אביב</option>
-    <option value="Asia/Jerusalem">ירושלים</option>
-    <option value="Asia/Haifa">חיפה</option>
-    <option value="Europe/London">לונדון</option>
-    <option value="America/New_York">ניו יורק</option>
+    <option value="293397">תל אביב</option>
+    <option value="281184">ירושלים</option>
+    <option value="294801">חיפה</option>
+    <option value="2643743">לונדון</option>
+    <option value="5128581">ניו יורק</option>
   </select>
 
   <div id="time" class="info">[שעה]</div>
@@ -50,7 +50,7 @@
       return n < 10 ? '0' + n : n;
     }
 
-    function updateDisplay() {
+    async function updateDisplay() {
       const now = new Date();
       const hours = pad(now.getHours());
       const minutes = pad(now.getMinutes());
@@ -66,18 +66,34 @@
       const hebDateStr = hdate.renderGematriya();
       document.getElementById('hebDate').textContent = hebDateStr;
 
-      const parasha = hebcal.ParshaOnDate(hdate);
-      document.getElementById('parasha').textContent = parasha ? 'פרשת ' + parasha : '[אין פרשה]';
+      const leyning = hebcal.getLeyning(hdate);
+      const parasha = leyning && leyning.parsha ? 'פרשת ' + leyning.parsha : '[אין פרשה]';
+      document.getElementById('parasha').textContent = parasha;
 
-      const location = document.getElementById('locationSelect').value;
-      const z = new hebcal.Zmanim(new hebcal.HDate(now), location);
-      const candle = z.candle_lighting();
-      document.getElementById('candles').textContent = candle ? 'הדלקת נרות: ' + candle.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) : '[אין זמני הדלקה]';
+      const geoId = document.getElementById('locationSelect').value;
+      const url = `https://www.hebcal.com/shabbat/?cfg=json&geonameid=${geoId}&b=1&m=50`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const candleEvent = data.items.find(item => item.category === 'candles');
+        if (candleEvent) {
+          const candleTime = new Date(candleEvent.date);
+          const timeStr = pad(candleTime.getHours()) + ':' + pad(candleTime.getMinutes());
+          document.getElementById('candles').textContent = 'הדלקת נרות: ' + timeStr;
+        } else {
+          document.getElementById('candles').textContent = '[אין זמני הדלקה]';
+        }
+      } catch (err) {
+        console.error('שגיאה בקבלת זמני הדלקה:', err);
+        document.getElementById('candles').textContent = '[שגיאה בהבאת נתונים]';
+      }
     }
 
     window.onload = function () {
       updateDisplay();
       setInterval(updateDisplay, 60000);
+      document.getElementById('locationSelect').addEventListener('change', updateDisplay);
     };
   </script>
 </body>
