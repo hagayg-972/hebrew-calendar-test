@@ -50,44 +50,56 @@
       return n < 10 ? '0' + n : n;
     }
 
-    async function updateDisplay() {
-      const now = new Date();
-      const hours = pad(now.getHours());
-      const minutes = pad(now.getMinutes());
+    function updateDisplay() {
+      var now = new Date();
+      var hours = pad(now.getHours());
+      var minutes = pad(now.getMinutes());
       document.getElementById('time').textContent = hours + ':' + minutes;
 
-      const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-      const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
-      const gregStr = days[now.getDay()] + ", " + now.getDate() + " ב" + months[now.getMonth()] + " " + now.getFullYear();
+      var days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+      var months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+      var gregStr = days[now.getDay()] + ", " + now.getDate() + " ב" + months[now.getMonth()] + " " + now.getFullYear();
       document.getElementById('gregDate').textContent = gregStr;
 
-      const hebcal = window.Hebcal;
-      const hdate = new hebcal.HDate(now);
-      const hebDateStr = hdate.renderGematriya();
+      var hebcal = window.Hebcal;
+      var hdate = new hebcal.HDate(now);
+      var hebDateStr = hdate.renderGematriya();
       document.getElementById('hebDate').textContent = hebDateStr;
 
-      const leyning = hebcal.getLeyning(hdate);
-      const parasha = leyning && leyning.parsha ? 'פרשת ' + leyning.parsha : '[אין פרשה]';
+      var leyning = hebcal.getLeyning(hdate);
+      var parasha = leyning && leyning.parsha ? 'פרשת ' + leyning.parsha : '[אין פרשה]';
       document.getElementById('parasha').textContent = parasha;
 
-      const geoId = document.getElementById('locationSelect').value;
-      const url = `https://www.hebcal.com/shabbat/?cfg=json&geonameid=${geoId}&b=1&m=50`;
+      var geoId = document.getElementById('locationSelect').value;
+      var url = "https://www.hebcal.com/shabbat/?cfg=json&geonameid=" + geoId + "&b=1&m=50";
 
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
-        const candleEvent = data.items.find(item => item.category === 'candles');
-        if (candleEvent) {
-          const candleTime = new Date(candleEvent.date);
-          const timeStr = pad(candleTime.getHours()) + ':' + pad(candleTime.getMinutes());
-          document.getElementById('candles').textContent = 'הדלקת נרות: ' + timeStr;
-        } else {
-          document.getElementById('candles').textContent = '[אין זמני הדלקה]';
+      var request = new XMLHttpRequest();
+      request.open('GET', url, true);
+      request.onreadystatechange = function () {
+        if (request.readyState === 4 && request.status === 200) {
+          try {
+            var data = JSON.parse(request.responseText);
+            var candleEvent = null;
+            for (var i = 0; i < data.items.length; i++) {
+              if (data.items[i].category === 'candles') {
+                candleEvent = data.items[i];
+                break;
+              }
+            }
+            if (candleEvent) {
+              var candleTime = new Date(candleEvent.date);
+              var timeStr = pad(candleTime.getHours()) + ':' + pad(candleTime.getMinutes());
+              document.getElementById('candles').textContent = 'הדלקת נרות: ' + timeStr;
+            } else {
+              document.getElementById('candles').textContent = '[אין זמני הדלקה]';
+            }
+          } catch (e) {
+            console.error('שגיאה בעיבוד הנתונים:', e);
+            document.getElementById('candles').textContent = '[שגיאה בעיבוד]';
+          }
         }
-      } catch (err) {
-        console.error('שגיאה בקבלת זמני הדלקה:', err);
-        document.getElementById('candles').textContent = '[שגיאה בהבאת נתונים]';
-      }
+      };
+      request.send();
     }
 
     window.onload = function () {
