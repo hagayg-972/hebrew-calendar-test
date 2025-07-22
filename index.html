@@ -27,13 +27,13 @@
     }
   </style>
   <script>
-    // Fallback Hebcal loader
     function loadHebcal(callback) {
       var script = document.createElement('script');
-      script.src = "https://unpkg.com/hebcal@2.5.0/dist/bundle.min.js";
+      script.src = "https://www.hebcal.com/js/hebcal.min.js";
       script.onload = callback;
       script.onerror = function () {
         console.error("Hebcal library failed to load");
+        callback();
       };
       document.head.appendChild(script);
     }
@@ -75,13 +75,18 @@
       try {
         if (typeof Hebcal !== 'undefined' && Hebcal.HDate) {
           var hdate = new Hebcal.HDate(now);
-          document.getElementById('hebDate').textContent = hdate.renderGematriya();
+          var hebStr = hdate.render("hebrew");
+          document.getElementById('hebDate').textContent = hebStr;
 
-          var events = Hebcal.getLeyning({hdate: hdate});
-          var parsha = events && events.parsha;
-          document.getElementById('parasha').textContent = parsha ? 'פרשת ' + parsha : '[אין פרשה]';
+          var events = hdate.holidays();
+          var parsha = events.find(ev => ev.desc.startsWith("Parashat"));
+          if (parsha) {
+            document.getElementById('parasha').textContent = parsha.hebrew || parsha.desc;
+          } else {
+            document.getElementById('parasha').textContent = '[אין פרשה]';
+          }
         } else {
-          throw new Error("Hebcal לא נטען");
+          throw new Error("Hebcal לא נטען כראוי");
         }
       } catch (e) {
         console.error("שגיאה בתאריך עברי / פרשה:", e);
@@ -98,13 +103,7 @@
         if (request.readyState === 4 && request.status === 200) {
           try {
             var data = JSON.parse(request.responseText);
-            var candleEvent = null;
-            for (var i = 0; i < data.items.length; i++) {
-              if (data.items[i].category === 'candles') {
-                candleEvent = data.items[i];
-                break;
-              }
-            }
+            var candleEvent = data.items.find(item => item.category === 'candles');
             if (candleEvent) {
               var candleTime = new Date(candleEvent.date);
               var timeStr = pad(candleTime.getHours()) + ':' + pad(candleTime.getMinutes());
